@@ -4,22 +4,22 @@ unset($CFG);
 global $CFG;
 $CFG = new stdClass();
 
-$CFG->dbtype    = 'mysqli';
+$CFG->dbtype    = 'mariadb';
 $CFG->dblibrary = 'native';
 $CFG->dbhost    = 'localhost';
-$CFG->dbname    = 'm382';
-$CFG->dbuser    = 'user';
-$CFG->dbpass    = 'user';
+$CFG->dbname    = 'moodle';
+$CFG->dbuser    = 'root';
+$CFG->dbpass    = '';
 $CFG->prefix    = 'mdl_';
 $CFG->dboptions = array (
   'dbpersist' => 0,
   'dbport' => '',
   'dbsocket' => '',
-  'dbcollation' => 'utf8mb4_general_ci',
+  'dbcollation' => 'utf8mb4_unicode_ci',
 );
 
-$CFG->wwwroot   = 'http://m382.ua';
-$CFG->dataroot  = 'D:\\programm\\OpenServer\\domains\\moodledataM382';
+$CFG->wwwroot   = 'http://localhost';
+$CFG->dataroot  = 'D:\\programm\\OpenServer\\domains\\m389.ua\\server\\moodledata';
 $CFG->admin     = 'admin';
 
 $CFG->directorypermissions = 0777;

@@ -38,18 +38,7 @@ $ADMIN->add('root', new admin_category('messaging', new lang_string('messagingca
 $ADMIN->add('root', new admin_category('modules', new lang_string('plugins', 'admin')));
 $ADMIN->add('root', new admin_category('security', new lang_string('security','admin')));
 $ADMIN->add('root', new admin_category('appearance', new lang_string('appearance','admin')));
-
-
-
-
-$ADMIN->add('root', new admin_category('custom', new lang_string('custom','admin')));
-
-
 $ADMIN->add('root', new admin_category('frontpage', new lang_string('frontpage','admin')));
-
-
-
-
 $ADMIN->add('root', new admin_category('server', new lang_string('server','admin')));
 $ADMIN->add('root', new admin_category('mnet', new lang_string('net','mnet'), (isset($CFG->mnet_dispatcher_mode) and $CFG->mnet_dispatcher_mode === 'off')));
 $ADMIN->add('root', new admin_category('reports', new lang_string('reports')));

@@ -68,7 +68,6 @@ if ($data = data_submitted() and confirm_sesskey()) {
         $errormsg = get_string('errorwithsettings', 'admin');
         $firsterror = reset($adminroot->errors);
     }
-
     $settingspage = $adminroot->locate($category, true);
 }
 
@@ -90,7 +89,6 @@ if ($PAGE->user_allowed_editing()) {
 
 $savebutton = false;
 $outputhtml = '';
-
 foreach ($settingspage->children as $childpage) {
     if ($childpage->is_hidden() || !$childpage->check_access()) {
         continue;
@@ -121,7 +119,6 @@ foreach ($settingspage->children as $childpage) {
         $outputhtml .= $OUTPUT->heading(html_writer::link(new moodle_url('/'.$CFG->admin.'/category.php', array('category' => $childpage->name)), get_string('admincategory', 'admin', $childpage->visiblename)), 3);
     }
 }
-
 if ($savebutton) {
     $outputhtml .= html_writer::start_tag('div', array('class' => 'form-buttons'));
     $outputhtml .= html_writer::empty_tag('input', array('class' => 'btn btn-primary form-submit', 'type' => 'submit', 'value' => get_string('savechanges','admin')));

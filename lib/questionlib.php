@@ -332,16 +332,18 @@ function question_category_in_use($categoryid, $recursive = false) {
 /**
  * Deletes question and all associated data from the database
  *
- * It will not delete a question if it is used by an activity module
+ * It will not delete a question if it is used somewhere.
+ *
  * @param object $question  The question being deleted
  */
 function question_delete_question($questionid) {
     global $DB;
 
     $question = $DB->get_record_sql('
-            SELECT q.*, qc.contextid
+            SELECT q.*, ctx.id AS contextid
             FROM {question} q
-            JOIN {question_categories} qc ON qc.id = q.category
+            LEFT JOIN {question_categories} qc ON qc.id = q.category
+            LEFT JOIN {context} ctx ON ctx.id = qc.contextid
             WHERE q.id = ?', array($questionid));
     if (!$question) {
         // In some situations, for example if this was a child of a
@@ -355,6 +357,15 @@ function question_delete_question($questionid) {
         return;
     }
 
+    // This sometimes happens in old sites with bad data.
+    if (!$question->contextid) {
+        debugging('Deleting question ' . $question->id . ' which is no longer linked to a context. ' .
+                'Assuming system context to avoid errors, but this may mean that some data like files, ' .
+                'tags, are not cleaned up.');
+        $question->contextid = context_system::instance()->id;
+    }
+
+    // Delete previews of the question.
     $dm = new question_engine_data_mapper();
     $dm->delete_previews($questionid);
 
@@ -585,7 +596,7 @@ function question_move_question_tags_to_new_context(array $questions, context $n
     $questionstagobjects = core_tag_tag::get_items_tags('core_question', 'question', $questionids);
 
     foreach ($questions as $question) {
-        $tagobjects = $questionstagobjects[$question->id];
+        $tagobjects = $questionstagobjects[$question->id] ?? [];
 
         foreach ($tagobjects as $tagobject) {
             $tagid = $tagobject->taginstanceid;
@@ -1707,8 +1718,11 @@ function question_has_capability_on($questionorid, $cap, $notused = -1) {
         try {
             $question = question_bank::load_question_data($questionid);
         } catch (Exception $e) {
-            // Let's log the exception for future debugging.
-            debugging($e->getMessage(), DEBUG_NORMAL, $e->getTrace());
+            // Let's log the exception for future debugging,
+            // but not during Behat, or we can't test these cases.
+            if (!defined('BEHAT_SITE_RUNNING')) {
+                debugging($e->getMessage(), DEBUG_NORMAL, $e->getTrace());
+            }
 
             // Well, at least we tried. Seems that we really have to read from DB.
             $question = $DB->get_record_sql('SELECT q.id, q.createdby, qc.contextid
@@ -1835,6 +1849,8 @@ function question_get_question_capabilities() {
         'moodle/question:useall',
         'moodle/question:movemine',
         'moodle/question:moveall',
+        'moodle/question:tagmine',
+        'moodle/question:tagall',
     );
 }
 

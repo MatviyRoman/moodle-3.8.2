@@ -49,6 +49,8 @@ class api {
     const LOGIN_VIA_EMBEDDED_BROWSER = 3;
     /** @var int seconds an auto-login key will expire. */
     const LOGIN_KEY_TTL = 60;
+    /** @var string URL of the Moodle Apps Portal */
+    const MOODLE_APPS_PORTAL_URL = 'https://apps.moodle.com';
 
     /**
      * Returns a list of Moodle plugins supporting the mobile app.
@@ -449,6 +451,7 @@ class api {
                 '$mmSideMenuDelegate_mmaCompetency' => new lang_string('myplans', 'tool_lp'),
                 'CoreMainMenuDelegate_AddonBlog' => new lang_string('blog', 'blog'),
                 '$mmSideMenuDelegate_mmaFiles' => new lang_string('files'),
+                'CoreMainMenuDelegate_CoreTag' => new lang_string('tags'),
                 '$mmSideMenuDelegate_website' => new lang_string('webpage'),
                 '$mmSideMenuDelegate_help' => new lang_string('help'),
             ),
@@ -550,8 +553,21 @@ class api {
                 $timenow = time();
                 $expectedissuer = null;
                 foreach ($info['certinfo'] as $cert) {
+
+                    // Due to a bug in certain curl/openssl versions the signature algorithm isn't always correctly parsed.
+                    // See https://github.com/curl/curl/issues/3706 for reference.
+                    if (!array_key_exists('Signature Algorithm', $cert)) {
+                        // The malformed field that does contain the algorithm we're looking for looks like the following:
+                        // <WHITESPACE>Signature Algorithm: <ALGORITHM><CRLF><ALGORITHM>.
+                        preg_match('/\s+Signature Algorithm: (?<algorithm>[^\s]+)/', $cert['Public Key Algorithm'], $matches);
+
+                        $signaturealgorithm = $matches['algorithm'] ?? '';
+                    } else {
+                        $signaturealgorithm = $cert['Signature Algorithm'];
+                    }
+
                     // Check if the signature algorithm is weak (Android won't work with SHA-1).
-                    if ($cert['Signature Algorithm'] == 'sha1WithRSAEncryption' || $cert['Signature Algorithm'] == 'sha1WithRSA') {
+                    if ($signaturealgorithm == 'sha1WithRSAEncryption' || $signaturealgorithm == 'sha1WithRSA') {
                         $warnings[] = ['insecurealgorithmwarning', 'tool_mobile'];
                     }
                     // Check certificate start date.
